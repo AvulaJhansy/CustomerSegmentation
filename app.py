@@ -1,15 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[3]:
-
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -19,31 +7,19 @@ from sklearn.preprocessing import LabelEncoder
 
 # Load the dataset
 df = pd.read_csv('Mall_Customers.csv')
-
-# Encode the 'Gender' column
 le = LabelEncoder()
 df['Gender'] = le.fit_transform(df['Gender'])
-
-# Feature matrix
 X = df[['Age', 'Annual Income (k$)', 'Spending Score (1-100)', 'Gender']]
-
-# K-means clustering
 k_optimal = 6
 kmeans_optimal = KMeans(n_clusters=k_optimal, init='k-means++', random_state=42)
 labels_optimal = kmeans_optimal.fit_predict(X)
-
-# Add cluster labels to the original dataframe
 df['Cluster_Optimal'] = labels_optimal
-
-# Function to generate strategy for a given cluster
 def generate_strategy(cluster):
     st.subheader(f'Marketing Strategy for Cluster {cluster}')
-
     if cluster == 0:
         st.subheader("these contains  Mainly older customers (average age 56) with moderate income and spending")
         st.write("Target older customers with moderate income and spending.")
         st.write("Create special deals and promotions for loyalty.")
-
     elif cluster == 1:
         st.subheader("This cluster mainly contains  Younger customers (average age 42) with higher income but lower spending")
         st.write("Attract younger customers with higher income but lower spending.")
@@ -74,16 +50,13 @@ def generate_strategy(cluster):
     else:
         st.write("Strategy not defined for this cluster.")
 
-# Streamlit app
 st.title('Cluster Analytics App')
 
 # Sidebar
 selected_cluster = st.sidebar.selectbox('Select Cluster', ['Visualize All'] + list(range(6)))
 
-# Placeholder for new data input
 new_data_placeholder = st.empty()
 
-# Visualization based on user selection
 if selected_cluster == 'Visualize All':
     # 3D Scatter plot with different colors for different clusters
     fig = px.scatter_3d(df, x='Age', y='Annual Income (k$)', z='Spending Score (1-100)', color='Cluster_Optimal',
@@ -91,15 +64,12 @@ if selected_cluster == 'Visualize All':
                         color_discrete_map={i: f'cluster {i}' for i in range(k_optimal)})
     fig.update_layout(scene=dict(aspectmode="cube"))
     st.plotly_chart(fig)
-
     # Display new data input fields
     st.sidebar.subheader('Check for New Data')
     new_data_age = st.sidebar.number_input('Age', min_value=0, max_value=100, value=25)
     new_data_income = st.sidebar.number_input('Annual Income (k$)', min_value=0, max_value=200, value=50)
     new_data_spending = st.sidebar.number_input('Spending Score (1-100)', min_value=0, max_value=100, value=50)
     new_data_gender = st.sidebar.selectbox('Gender', ['Male', 'Female'])
-
-    # Convert gender to numerical using LabelEncoder
     new_data_gender_encoded = le.transform([new_data_gender])[0]
 
     # Check for cluster button
@@ -110,11 +80,8 @@ if selected_cluster == 'Visualize All':
         # Display the cluster for the new data
         st.sidebar.subheader(f'The new data belongs to Cluster {predicted_cluster}')
 
-        # Generate strategy for the new data cluster
         generate_strategy(predicted_cluster)
-
 else:
-    # Clear the placeholder when Visualize All is not selected
     new_data_placeholder.empty()
     # Filter data for the selected cluster
     selected_cluster_data = df[df['Cluster_Optimal'] == selected_cluster]
@@ -124,23 +91,7 @@ else:
                                         z='Spending Score (1-100)', title=f'Cluster {selected_cluster} Visualization')
     fig_selected_cluster.update_layout(scene=dict(aspectmode="cube"))
     st.plotly_chart(fig_selected_cluster)
-
-    # Display statistics for the selected cluster
     st.subheader(f'Statistics for Cluster {selected_cluster}')
     st.write(selected_cluster_data.describe())
-
-    # Generate strategy for the selected cluster
     generate_strategy(selected_cluster)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
